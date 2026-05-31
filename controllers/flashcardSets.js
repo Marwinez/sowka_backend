@@ -23,6 +23,7 @@ flashcardSetsRouter.post('/', (req, res) => {
     const body = req.body
 
     const flashcardSet = new FlashcardSet({
+        ownerId: body.ownerId,
         title: body.title,
         cards: body.cards,
     })
@@ -42,8 +43,8 @@ flashcardSetsRouter.delete('/:id', (req, res) => {
         .catch(error => next(error))
 })
 
-flashcardSetsRouter.delete('/:id', (req, res) => {
-    const { title, cards } = req.body
+flashcardSetsRouter.put('/:id', (req, res) => {
+    const { ownerId, title, cards } = req.body
 
     FlashcardSet.findById(req.params.id)
         .then(flashcardSet => {
@@ -51,6 +52,7 @@ flashcardSetsRouter.delete('/:id', (req, res) => {
                 return res.status(404).end()
             }
 
+            flashcardSet.ownerId = ownerId
             flashcardSet.title = title
             flashcardSet.cards = cards
 

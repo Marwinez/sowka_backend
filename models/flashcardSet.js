@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
 const flashcardSetSchema = new mongoose.Schema({
+    ownerId: {
+        type: String,
+        required: true,
+    },
     title: {
         type: String,
         required: true,
