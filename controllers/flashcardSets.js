@@ -1,49 +1,64 @@
 const flashcardSetsRouter = require('express').Router()
 const FlashcardSet = require('../models/flashcardSet')
+const {userExtractor} = require("../utils/middleware");
 
-flashcardSetsRouter.get('/', (req, res) => {
-    FlashcardSet.find({}).then(flashcardSets => {
-        res.json(flashcardSets)
-    })
+flashcardSetsRouter.get('/', async (req, res) => {
+    const flashcardSets = await FlashcardSet
+        .find({}).populate('userId', { username: 1, name: 1 })
+    res.json(flashcardSets)
 })
 
-flashcardSetsRouter.get('/:id', (req, res) => {
-    FlashcardSet.findById(req.params.id)
-        .then(flashcardSet => {
-            if (flashcardSet) {
-                res.json(flashcardSet)
-            } else {
-                res.status(404).end()
-            }
-        })
-        .catch(error => next(error))
+flashcardSetsRouter.get('/:id', async (req, res) => {
+    const flashcardSet = await FlashcardSet(req.params.id)
+    if (flashcardSet) {
+        res.json(flashcardSet)
+    } else {
+        res.status(404).end()
+    }
 })
 
-flashcardSetsRouter.post('/', (req, res) => {
+flashcardSetsRouter.post('/', userExtractor, async (req, res) => {
     const body = req.body
 
+    const user = req.user
+
+    if (!user) {
+        return res.status(400).json({ error: 'userId not valid or missing' })
+    }
+
     const flashcardSet = new FlashcardSet({
-        ownerId: body.ownerId,
         title: body.title,
         cards: body.cards,
+        userId: user._id,
     })
 
-    flashcardSet.save()
-        .then(savedFlashcardSet => {
-            res.json(savedFlashcardSet)
-        })
-        .catch(error => next(error))
+    const savedFlashcardSet = await flashcardSet.save()
+    console.log("TUTAJ: ", savedFlashcardSet)
+    user.flashcardSets = user.flashcardSets.concat(savedFlashcardSet._id)
+    await user.save()
+
+    res.status(201).json(savedFlashcardSet)
 })
 
-flashcardSetsRouter.delete('/:id', (req, res) => {
-    FlashcardSet.findByIdAndDelete(req.params.id)
-        .then(() => {
-            res.status(204).end()
-        })
-        .catch(error => next(error))
+flashcardSetsRouter.delete('/:id', userExtractor, async (req, res) => {
+    const user = req.user
+
+    if (!user) {
+        return res.status(400).json({ error: 'userId not valid or missing' })
+    }
+
+    const flashcardSet = await FlashcardSet.findById(req.params.id)
+    if (flashcardSet.userId.toString() === user._id.toString()) {
+        await FlashcardSet.findByIdAndDelete(req.params.id)
+        res.status(204).end()
+    } else {
+        res.status(400).json({ error: 'userId not valid' })
+    }
+
+
 })
 
-flashcardSetsRouter.put('/:id', (req, res) => {
+flashcardSetsRouter.put('/:id', (req, res, next) => {
     const { ownerId, title, cards } = req.body
 
     FlashcardSet.findById(req.params.id)
