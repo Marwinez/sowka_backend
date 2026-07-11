@@ -21,6 +21,15 @@ mongoose
         logger.error('error connecting to MongoDB', err.message)
     })
 
+const fs = require('fs');
+
+console.log('dist exists:', fs.existsSync(path.join(__dirname, 'dist')));
+console.log('assets exists:', fs.existsSync(path.join(__dirname, 'dist', 'assets')));
+
+if (fs.existsSync(path.join(__dirname, 'dist', 'assets'))) {
+    console.log(fs.readdirSync(path.join(__dirname, 'dist', 'assets')));
+}
+
 app.use(express.static(path.join(__dirname, 'dist')))
 
 app.use(express.json())
