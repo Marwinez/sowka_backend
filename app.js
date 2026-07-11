@@ -31,7 +31,7 @@ app.use('/api/flashcardsets', flashcardSetsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.get('*splat', (req, res) => {
-    res.sendFile(path.join(__dirname,'/dist', 'index.html'))
+    res.sendFile(path.join(__dirname,'dist', 'index.html'))
 })
 
 app.use(middleware.unknownEndpoint)
