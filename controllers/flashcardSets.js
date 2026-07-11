@@ -8,8 +8,18 @@ flashcardSetsRouter.get('/', async (req, res) => {
     res.json(flashcardSets)
 })
 
+flashcardSetsRouter.get('/usersets/:id', async (req, res) => {
+    console.log("params:", req.params.id)
+    const userId = req.params.id
+    console.log("userId:", userId)
+    const flashcardSets = await FlashcardSet
+        .find({'userId': userId})
+    console.log("flashcardSets:", flashcardSets)
+    res.json(flashcardSets)
+})
+
 flashcardSetsRouter.get('/:id', async (req, res) => {
-    const flashcardSet = await FlashcardSet(req.params.id)
+    const flashcardSet = await FlashcardSet.findById(req.params.id)
     if (flashcardSet) {
         res.json(flashcardSet)
     } else {
