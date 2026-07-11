@@ -1,5 +1,17 @@
 const mongoose = require('mongoose')
 
+const cardSchema = new mongoose.Schema({
+    front: String,
+    back: String
+})
+
+cardSchema.set('toJSON', {
+    transform: (doc, ret) => {
+        ret.id = ret._id.toString()
+        delete ret._id
+    }
+})
+
 const flashcardSetSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -10,11 +22,7 @@ const flashcardSetSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    cards: [{
-        cardId: Number,
-        front: String,
-        back: String
-    }]
+    cards: [cardSchema]
 })
 
 flashcardSetSchema.set('toJSON', {
