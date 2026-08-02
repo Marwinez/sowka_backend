@@ -1,6 +1,6 @@
 const flashcardSetsRouter = require('express').Router()
 const FlashcardSet = require('../models/flashcardSet')
-const {userExtractor} = require("../utils/middleware");
+const {tokenExtractor, userExtractor} = require("../utils/middleware");
 
 flashcardSetsRouter.get('/', async (req, res) => {
     const flashcardSets = await FlashcardSet
@@ -50,7 +50,7 @@ flashcardSetsRouter.post('/', userExtractor, async (req, res) => {
     res.status(201).json(savedFlashcardSet)
 })
 
-flashcardSetsRouter.delete('/:id', userExtractor, async (req, res) => {
+flashcardSetsRouter.delete('/:id', tokenExtractor, userExtractor, async (req, res) => {
     const user = req.user
 
     if (!user) {
@@ -68,10 +68,10 @@ flashcardSetsRouter.delete('/:id', userExtractor, async (req, res) => {
 
 })
 
-flashcardSetsRouter.put('/:id', (req, res, next) => {
+flashcardSetsRouter.put('/:id', tokenExtractor, userExtractor, async (req, res, next) => {
     const { ownerId, title, cards } = req.body
 
-    FlashcardSet.findById(req.params.id)
+    await FlashcardSet.findById(req.params.id)
         .then(flashcardSet => {
             if(!flashcardSet) {
                 return res.status(404).end()
